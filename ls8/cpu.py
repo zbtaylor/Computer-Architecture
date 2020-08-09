@@ -1,6 +1,7 @@
 """CPU functionality."""
 
 import sys
+from numbers import Number
 
 
 class CPU:
@@ -8,8 +9,9 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
+
         self.ram = [None] * 256
-        self.registers = [None] * 8
+        self.reg = [None] * 8
         self.pc = 0
 
     def load(self):
@@ -60,14 +62,42 @@ class CPU:
         for i in range(8):
             print(" %02X" % self.reg[i], end='')
 
-        print()
+        # print()
 
-    def ram_read():
-        pass
+    def ram_read(self, addr):
+        return self.ram[addr]
 
-    def ram_write():
-        pass
+    def ram_write(self, val, addr):
+        self.ram[addr] = val
 
     def run(self):
         """Run the CPU."""
-        pass
+
+        running = True
+
+        while running:
+            IR = self.ram[self.pc]
+
+            # HLT
+            if IR == int('0b00000001', 2):
+                running = False
+                self.pc = 0
+
+            # LDI
+            if IR == int('0b10000010', 2):
+                index = self.ram[self.pc + 1]
+                value = self.ram[self.pc + 2]
+                self.reg[index] = value
+                self.pc += 3
+
+            # PRN
+            if IR == int('0b01000111', 2):
+                index = self.ram[self.pc + 1]
+                value = self.reg[index]
+                print(value)
+                self.pc += 2
+
+
+comp = CPU()
+comp.load()
+comp.run()

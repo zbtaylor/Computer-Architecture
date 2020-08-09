@@ -14,26 +14,27 @@ class CPU:
         self.reg = [None] * 8
         self.pc = 0
 
-    def load(self):
+    def load(self, program):
         """Load a program into memory."""
 
         address = 0
 
-        # For now, we've just hardcoded a program:
+        try:
+            with open(program) as file:
+                for line in file:
+                    comment_split = line.split('#')
+                    possible_num = comment_split[0]
 
-        program = [
-            # From print8.ls8
-            0b10000010,  # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111,  # PRN R0
-            0b00000000,
-            0b00000001,  # HLT
-        ]
+                    if possible_num == '':
+                        continue
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+                    if possible_num[0] == '1' or possible_num[0] == '0':
+                        num = possible_num[:8]
+                        self.ram[address] = int(num, 2)
+                        address += 1
+
+        except:
+            print("Program not found.")
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -79,25 +80,27 @@ class CPU:
             IR = self.ram[self.pc]
 
             # HLT
-            if IR == int('0b00000001', 2):
+            if IR == int('00000001', 2):
                 running = False
                 self.pc = 0
 
             # LDI
-            if IR == int('0b10000010', 2):
+            if IR == int('10000010', 2):
                 index = self.ram[self.pc + 1]
                 value = self.ram[self.pc + 2]
                 self.reg[index] = value
                 self.pc += 3
 
             # PRN
-            if IR == int('0b01000111', 2):
+            if IR == int('01000111', 2):
                 index = self.ram[self.pc + 1]
                 value = self.reg[index]
                 print(value)
                 self.pc += 2
 
-
-comp = CPU()
-comp.load()
-comp.run()
+            # MUL
+            if IR == int('10100010', 2):
+                indexA = self.ram[self.pc + 1]
+                indexB = self.ram[self.pc + 2]
+                self.reg[indexA] = self.reg[indexA] * self.reg[indexB]
+                self.pc += 3

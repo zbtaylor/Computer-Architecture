@@ -13,6 +13,7 @@ class CPU:
         self.ram = [None] * 256
         self.reg = [None] * 8
         self.pc = 0
+        self.reg[7] = 0xF4
 
     def load(self, program):
         """Load a program into memory."""
@@ -104,3 +105,21 @@ class CPU:
                 indexB = self.ram[self.pc + 2]
                 self.reg[indexA] = self.reg[indexA] * self.reg[indexB]
                 self.pc += 3
+
+            # PUSH
+            if IR == int('01000101', 2):
+                self.reg[7] -= 1
+                register_number = self.ram[self.pc + 1]
+                number_to_push = self.reg[register_number]
+                stack_pntr = self.reg[7]
+                self.ram[stack_pntr] = number_to_push
+                self.pc += 2
+
+            # POP
+            if IR == int('01000110', 2):
+                stack_pntr = self.reg[7]
+                popped_value = self.ram[stack_pntr]
+                register_number = self.ram[self.pc + 1]
+                self.reg[register_number] = popped_value
+                self.reg[7] += 1
+                self.pc += 2
